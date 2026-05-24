@@ -1,45 +1,48 @@
-Defect Detection in Hot Rolling
-Max. score: 100
-In Hot Rolling Mills, one specific defect (referred to here as the Alpha defect) is a critical quality challenge. This defect cannot be detected through the existing system because the coil remains under tension in the inspection zones. Since it is not possible to detect Alpha defects inline, current quality control relies on sample observations at the final stage, where only a certain percentage of the total coils produced are inspected. Additionally, manual inspection is time-intensive, whereas the manufacturing and supply chain processes operate under strict time constraints. Although the Alpha defect accounts for only a very small percentage of the total production volume, it can still lead to customer complaints and product downgrades.
- 
-Task
-During hot rolling, each stage has different process parameters that can contribute to the formation of the defect. Therefore, all stages must be considered to effectively detect the formation of Alpha defects.
+## Defect Detection in Hot Rolling Mills (Max. Score: 100)## Project Overview
+The "Alpha Defect" is a critical quality challenge in hot rolling mills. It cannot be detected inline because the steel coil remains under tension in the inspection zones.
+Current quality control relies on destructive or manual sample observations at the final stage, checking only a small percentage of total coils. Manual inspection is highly time-intensive, creating a bottleneck for strict manufacturing and supply chain timelines. While the alpha defect accounts for a small percentage of production, it causes customer complaints and costly product downgrades. [1, 2, 3, 4, 5] 
+## Objective
+Predict the occurrence of the alpha defect during the rolling process using multi-stage process parameters ($X1$ to $X49$) to enable proactive quality control and eliminate customer complaints.
+------------------------------
+## Dataset Description
+The dataset contains multi-stage process parameters captured during production.
+## File Dimensions
 
-Detect the occurrence of the Alpha defect during rolling to prevent customer complaints and reduce downgrades through proactive action.
+* train.csv: 1352 rows × 51 columns
+* test.csv: 339 rows × 50 columns
+* sample_submission.csv: 339 rows × 2 columns
 
-Dataset Description
+## Variable Description
 
-The dataset folder contains the following files:
+| Column Name | Description |
+|---|---|
+| coilid | Unique identifier for each manufactured steel coil |
+| x1 to x49 | Process parameters measured across multiple manufacturing stages |
+| y | Target variable: Alpha defect occurrence (1 = Defect, 0 = No Defect) |
 
-File	Dimensions
-train.csv	1352 × 51
-test.csv	339 × 50
-sample_submission.csv	339 × 2
-Variable Description
+------------------------------
+## Evaluation Metric
+Submissions are evaluated automatically based on strict confusion matrix thresholds to ensure zero defective coils reach the customer.
 
-Column Name	Description
-CoilID	Unique identifier for each coil
-X1–X49	Process parameters across multiple stages
-Y	Target variable: Alpha defect occurrence (1 = Defect, 0 = No Defect)
-Evaluation Metric
+* Recall: 100% (Exactly 0 False Negatives allowed)
+* Precision: > 90% (Less than 10% False Positives allowed)
 
-A model which will have 0 false negative and less than 10% False positive will be accepted.
+------------------------------
+## Submission Criteria
+Your final output must strictly follow these constraints to avoid automated rejection:
 
-Recall – 100%
-Precision - > 90%
-Submission Criteria
+* Format: .csv file format only
+* Dimensions: Exactly 339 rows × 2 columns
+* Required Columns:
+1. coilid: Must match the exact identifiers in test.csv
+   2. y: Predicted binary classification (0 or 1)
 
-The submission file must be submitted in .csv format only.
-The size of this submission file must be 339 × 2.
-Ensure that your submission file contains:
-Correct CoilID values as per the test file
-Correct column names as provided in the sample_submission.csv file
-Instructions
+------------------------------
+## Getting Started## 
+Given the strict 100% Recall requirement, standard probability thresholds (0.5) will likely fail.
 
-Click Download dataset to download the dataset.
-Solve the problem in your local environment.
-Save the predictions in a .csv file named expected_submission.csv.
-Click Upload File (under the Upload File section) to upload your prediction file (.csv).
-Click Upload File (under the Upload Source Code section) to upload your .ipynb file along with any presentation file.
-Add any instructions or comments in the Your Answer section.
-Click Submit.
+   1. Handle Imbalance: The alpha defect is rare; use class-weighting or SMOTE.
+   2. Optimize Thresholds: Lower the classification threshold during prediction to eliminate False Negatives.
+   3. Metric Focus: Tune hyper-parameters using recall as the primary scoring metric, while monitoring precision.
+
+------------------------------

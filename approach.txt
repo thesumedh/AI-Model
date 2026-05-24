@@ -1,0 +1,122 @@
+I’m in the Tata Steel AI Hackathon for Alpha defect detection in hot rolling mills. Dataset is very small and highly imbalanced:
+
+* Train: 1352 rows
+* Positives (defects): only 66 (~4.9%)
+* Test: 339 rows
+
+Official statement says:
+
+* 0 False Negatives
+* Recall = 100%
+* Precision > 90%
+
+But the public leaderboard behavior became extremely suspicious.
+
+Here’s what we’ve done so far:
+
+1. Initial Modeling
+
+* Tried CatBoost, LightGBM, XGBoost
+* CatBoost consistently performed best
+* Best OOF AUC stayed around 0.90–0.91
+* Depth=3 worked much better than deeper trees
+
+2. Feature Engineering
+   Built:
+
+* stage-wise mean/std/min/max/range/skew/kurtosis
+* global statistics
+* stage ratios/differences
+* interaction features
+* missing indicators
+* distance-from-stage-median features
+
+Initially engineered ~144 features, but discovered too many features caused overfitting and unstable thresholds.
+
+3. Feature Selection Findings
+
+* Best range was around 15–35 features
+* 35+ usually hurt badly
+* Added fold-wise feature stability voting:
+
+  * keeping only features appearing in top importance across folds
+* > =4 fold stability gave best robustness
+* > =3 introduced too much noise and collapsed thresholds
+
+4. Ensemble Findings
+
+* CatBoost strongest model
+* XGBoost noisier
+* Tried blends:
+
+  * 50/50
+  * 80/20
+  * etc.
+* Multi-seed averaging helped a lot:
+  SEEDS = [42, 123, 777, 2026, 999]
+
+5. Thresholding Experiments
+   Huge issue:
+
+* forcing literal 100% recall caused massive false positives
+* threshold extremely fragile
+
+We evolved from:
+
+* hardcoded threshold buffers
+  to:
+* adaptive epsilon using fold threshold std
+
+But aggressive adaptive thresholding sometimes collapsed and predicted almost everything positive.
+
+6. Anomaly Detection Experiments
+   Tried:
+
+* IsolationForest
+* Mahalanobis distances
+* LOF
+
+But anomaly features actually worsened leaderboard performance and added variance, so we removed them completely.
+
+7. Public Leaderboard Weirdness
+   This is the strange part.
+
+Scores appear almost perfectly tied to:
+(number of predicted 1s) / 265 * 100
+
+Examples:
+
+* 60 positives -> 22.64
+* 198 positives -> 72.45
+* 207 positives -> 75.47
+
+Multiple people already have 100%.
+
+This made us suspect:
+
+* public leaderboard may be bugged,
+* or using a proxy metric,
+* or intentionally misleading.
+
+But we’re not sure.
+
+8. Current Best Robust Pipeline
+
+* compact stable features (~19–35)
+* CatBoost-heavy shallow ensemble
+* depth=3
+* stable feature voting
+* multi-seed averaging
+* conservative thresholding
+* no anomaly features
+
+Best leaderboard score achieved so far:
+~75%
+
+Main confusion now:
+Should we:
+A) trust cross-validation + realistic thresholds
+OR
+B) exploit the suspicious public leaderboard behavior by predicting many positives?
+
+I’m worried there may be some hidden catch or evaluation trick in the competition that we’re missing.
